@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Video Player App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: black;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .top {
+      height: 30%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .top h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: black;
+    }
+
+    .top p {
+      font-size: 1rem;
+      color: black;
+      margin-top: 10px;
+    }
+
+    .bottom {
+      background-color: black;
+      height: 70%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      position: relative;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input, button, select {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+      width: 300px;
+    }
+
+    input[type="text"], input[type="file"] {
+      background-color: #222;
+      color: #fff;
+    }
+
+    button {
+      background-color: var(--btn-color, #4cbb17);
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .video-wrapper {
+      width: 100%;
+      max-width: 800px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    video, iframe {
+      width: 100%;
+      height: 450px;
+      border-radius: 10px;
+      border: 3px solid var(--btn-color, #4cbb17);
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 10px;
+      right: 20px;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .selectors {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    select {
+      background-color: #222;
+      color: white;
+    }
+
+    @media screen and (max-width: 600px) {
+      input, button, select {
+        width: 90%;
+      }
+
+      video, iframe {
+        height: 250px;
+      }
+    }
+
+    /* Theme Backgrounds */
+    .green-theme .top { background-color: #4cbb17; }
+    .blue-theme .top { background-color: #007BFF; }
+    .purple-theme .top { background-color: #800080; }
+  </style>
+</head>
+<body class="green-theme">
+
+  <div class="top">
+    <h1 id="title">My Video Player App</h1>
+    <p id="subtitle">Upload a video or paste a direct link (MP4 or YouTube)</p>
+  </div>
+
+  <div class="bottom">
+    <div class="selectors">
+      <select id="themePicker">
+        <option value="green">Green Theme</option>
+        <option value="blue">Blue Theme</option>
+        <option value="purple">Purple Theme</option>
+      </select>
+
+      <select id="langPicker">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="mr">Marathi</option>
+      </select>
+    </div>
+
+    <form action="/play" method="post" enctype="multipart/form-data">
+      <input type="file" name="upload" accept="video/*" />
+      <button type="submit" id="uploadBtn">Upload & Play</button>
+    </form>
+
+    <form action="/play" method="post">
+      <input type="text" name="url" placeholder="Paste video URL or YouTube link" autocomplete="off" />
+      <button type="submit" id="linkBtn">Play from URL</button>
+    </form>
+
+    {% if video_src %}
+    <div class="video-wrapper">
+      {% if is_youtube %}
+        <iframe src="{{ video_src }}" frameborder="0" allowfullscreen></iframe>
+      {% else %}
+        <video controls autoplay>
+          <source src="{{ video_src }}" />
+          Your browser does not support the video tag.
+        </video>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="footer">
+      Designed and Created by Swaraj Wadkar
+    </div>
+  </div>
+
+  <script>
+    // Theme Picker
+    const theme = localStorage.getItem("theme") || "green";
+    document.body.className = theme + "-theme";
+    document.documentElement.style.setProperty('--btn-color', getThemeColor(theme));
+    document.getElementById("themePicker").value = theme;
+
+    document.getElementById("themePicker").addEventListener("change", function () {
+      const selected = this.value;
+      localStorage.setItem("theme", selected);
+      document.body.className = selected + "-theme";
+      document.documentElement.style.setProperty('--btn-color', getThemeColor(selected));
+    });
+
+    function getThemeColor(name) {
+      return {
+        green: "#4cbb17",
+        blue: "#007BFF",
+        purple: "#800080"
+      }[name];
+    }
+
+    // Language Picker
+    const langs = {
+      en: {
+        title: "My Video Player App",
+        subtitle: "Upload a video or paste a direct link (MP4 or YouTube)",
+        upload: "Upload & Play",
+        link: "Play from URL"
+      },
+      hi: {
+        title: "मेरा वीडियो प्लेयर ऐप",
+        subtitle: "एक वीडियो अपलोड करें या लिंक पेस्ट करें (MP4 या YouTube)",
+        upload: "अपलोड करें और चलाएं",
+        link: "URL से चलाएं"
+      },
+      mr: {
+        title: "माझे व्हिडिओ प्लेअर अ‍ॅप",
+        subtitle: "व्हिडिओ अपलोड करा किंवा थेट लिंक पेस्ट करा (MP4 किंवा YouTube)",
+        upload: "अपलोड करा आणि प्ले करा",
+        link: "URL वरून प्ले करा"
+      }
+    };
+
+    const lang = localStorage.getItem("lang") || "en";
+    setLang(lang);
+    document.getElementById("langPicker").value = lang;
+
+    document.getElementById("langPicker").addEventListener("change", function () {
+      localStorage.setItem("lang", this.value);
+      setLang(this.value);
+    });
+
+    function setLang(code) {
+      document.getElementById("title").textContent = langs[code].title;
+      document.getElementById("subtitle").textContent = langs[code].subtitle;
+      document.getElementById("uploadBtn").textContent = langs[code].upload;
+      document.getElementById("linkBtn").textContent = langs[code].link;
+    }
+  </script>
+</body>
+</html>
